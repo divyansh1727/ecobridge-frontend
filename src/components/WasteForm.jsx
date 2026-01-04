@@ -59,38 +59,37 @@ export default function WasteForm({ onSubmitWaste, onBack}) {
     tempErrors.contact = "Enter valid 10-digit mobile number";
   if (!form.type)
     tempErrors.type = "Please select type of waste";
+
   setErrors(tempErrors);
 
-  if (Object.keys(tempErrors).length === 0) {
-    const wasteRequest = {
-      ...form,
-      status: "PENDING",
-    };
+  if (Object.keys(tempErrors).length !== 0) return;
 
-    try {
-      const res = await fetch("https://ecbridge.onrender.com/api/waste"
-, {
+  try {
+    const res = await fetch(
+      "https://ecbridge.onrender.com/api/waste",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(wasteRequest),
-      });
-
-      const data = await res.json();
-
-      // send data to App.jsx
-      if (onSubmitWaste) {
-        onSubmitWaste(data);
+        body: JSON.stringify({
+          ...form,
+          status: "PENDING",
+        }),
       }
+    );
 
-      alert("Waste request submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting waste:", error);
-      alert("Failed to submit waste request");
-    }
+    const savedWaste = await res.json();
+
+    // ✅ IMPORTANT: send backend response, not local form
+    onSubmitWaste(savedWaste);
+
+  } catch (err) {
+    console.error("Error submitting waste:", err);
+    alert("Failed to submit waste");
   }
 };
+
 
 
   return (

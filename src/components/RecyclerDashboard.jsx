@@ -5,22 +5,26 @@ const API_BASE = "https://ecbridge.onrender.com";
 export default function RecyclerDashboard({ onBack }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionMsg, setActionMsg] = useState("");
 
-  // Fetch waste requests
+  // 🔁 Fetch matched waste
+  const fetchRequests = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/waste`);
+      const data = await res.json();
+      setRequests(data);
+    } catch (err) {
+      console.error("Failed to fetch waste", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch(`${API_BASE}/api/waste`)
-      .then((res) => res.json())
-      .then((data) => {
-        setRequests(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchRequests();
   }, []);
 
-  // Update waste status
+  // ✅ Update status
   const updateStatus = async (id, status) => {
     try {
       const res = await fetch(`${API_BASE}/api/waste/${id}`, {
@@ -33,8 +37,14 @@ export default function RecyclerDashboard({ onBack }) {
         throw new Error("Failed to update status");
       }
 
-      // Remove updated request from UI
-      setRequests((prev) => prev.filter((item) => item._id !== id));
+      setActionMsg(`Waste ${status.toLowerCase()} successfully`);
+
+      // 🔁 Refetch list from backend (source of truth)
+      await fetchRequests();
+
+      // Clear message after 2s
+      setTimeout(() => setActionMsg(""), 2000);
+
     } catch (error) {
       console.error(error);
       alert("Error updating waste status");
@@ -46,6 +56,12 @@ export default function RecyclerDashboard({ onBack }) {
       <h2 className="text-3xl font-bold text-center mb-8">
         Recycler Dashboard
       </h2>
+
+      {actionMsg && (
+        <p className="text-center mb-4 text-green-300 font-semibold">
+          {actionMsg}
+        </p>
+      )}
 
       {loading && (
         <p className="text-center">Loading requests...</p>
@@ -66,29 +82,21 @@ export default function RecyclerDashboard({ onBack }) {
             <p><b>Type:</b> {waste.type}</p>
             <p><b>Quantity:</b> {waste.quantity} kg</p>
             <p><b>Location:</b> {waste.location}</p>
-            <p>
-              <b>Status:</b>{" "}
-              <span className="font-semibold text-green-700">
-                {waste.status}
-              </span>
-            </p>
 
-            {waste.status === "MATCHED" && (
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={() => updateStatus(waste._id, "ACCEPTED")}
-                  className="flex-1 bg-green-300 py-2 rounded-lg font-bold hover:bg-green-200"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => updateStatus(waste._id, "REJECTED")}
-                  className="flex-1 bg-red-300 py-2 rounded-lg font-bold hover:bg-red-200"
-                >
-                  Reject
-                </button>
-              </div>
-            )}
+            <div className="flex gap-4 mt-4">
+              <button
+                onClick={() => updateStatus(waste._id, "ACCEPTED")}
+                className="flex-1 bg-green-300 py-2 rounded-lg font-bold hover:bg-green-200"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => updateStatus(waste._id, "REJECTED")}
+                className="flex-1 bg-red-300 py-2 rounded-lg font-bold hover:bg-red-200"
+              >
+                Reject
+              </button>
+            </div>
           </div>
         ))}
       </div>
