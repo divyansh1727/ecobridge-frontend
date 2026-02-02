@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+
+/* ---------- USER APP COMPONENTS ---------- */
 import Navbar from "./components/Navbar";
 import Splash from "./components/Splash";
 import Home from "./pages/Home";
@@ -8,14 +11,41 @@ import RecycleForm from "./components/RecycleForm";
 import WasteStatus from "./components/WasteStatus";
 import RecyclerDashboard from "./components/RecyclerDashboard";
 import Footer from "./components/Footer";
-import { AnimatePresence, motion } from "framer-motion";
+
+/* ---------- ADMIN COMPONENTS ---------- */
+import AdminLogin from "./admin/pages/AdminLogin";
+import AdminDashboard from "./admin/pages/Dashboard";
 
 function App() {
+  /* ======================================================
+     ADMIN ROUTING (HIGHEST PRIORITY)
+     ====================================================== */
+  const pathname = window.location.pathname.replace(/\/$/, "");
+
+  if (pathname.startsWith("/admin")) {
+    if (pathname === "/admin/login") {
+      return <AdminLogin />;
+    }
+
+    if (pathname === "/admin/dashboard") {
+      return <AdminDashboard />;
+    }
+
+    return (
+      <div style={{ padding: 40 }}>
+        <h2>Admin page not found</h2>
+      </div>
+    );
+  }
+
+  /* ======================================================
+     USER APP (STEP-BASED FLOW)
+     ====================================================== */
   const [step, setStep] = useState("splash");
   const [selectedRole, setSelectedRole] = useState(null);
   const [wasteData, setWasteData] = useState(null);
 
-  /* ---------------- Splash Screen ---------------- */
+  /* ---------- Splash Screen ---------- */
   useEffect(() => {
     const timer = setTimeout(() => {
       setStep("home");
@@ -25,10 +55,11 @@ function App() {
         ""
       );
     }, 2500);
+
     return () => clearTimeout(timer);
   }, []);
 
-  /* ---------------- Push browser history ---------------- */
+  /* ---------- Push browser history ---------- */
   useEffect(() => {
     if (step !== "splash") {
       window.history.pushState(
@@ -39,7 +70,7 @@ function App() {
     }
   }, [step, selectedRole, wasteData]);
 
-  /* ---------------- Handle browser back ---------------- */
+  /* ---------- Handle browser back ---------- */
   useEffect(() => {
     const handlePopState = (event) => {
       if (event.state) {
@@ -48,21 +79,22 @@ function App() {
         setWasteData(event.state.wasteData);
       }
     };
+
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  /* ---------- Splash Render ---------- */
   if (step === "splash") return <Splash />;
 
   return (
     <>
       <Navbar currentStep={step} goHome={() => setStep("home")} />
 
-
       <div className="pt-20">
         <AnimatePresence mode="wait">
 
-          {/* ---------------- HOME ---------------- */}
+          {/* HOME */}
           {step === "home" && (
             <motion.div
               key="home"
@@ -75,7 +107,7 @@ function App() {
             </motion.div>
           )}
 
-          {/* ---------------- ROLE SELECT ---------------- */}
+          {/* ROLE SELECT */}
           {step === "role" && (
             <motion.div
               key="role"
@@ -88,12 +120,10 @@ function App() {
                 onSelect={(role) => {
                   setSelectedRole(role);
 
-                  if (role === "generator") {
-                    setStep("wasteForm");
-                  } else if (role === "recycler") {
-                    setStep("recyclerForm");
-                  } else if (role === "admin") {
-                    alert("Admin panel coming soon!");
+                  if (role === "generator") setStep("wasteForm");
+                  else if (role === "recycler") setStep("recyclerForm");
+                  else if (role === "admin") {
+                    window.location.href = "/admin/login";
                   }
                 }}
                 onBack={() => setStep("home")}
@@ -101,68 +131,33 @@ function App() {
             </motion.div>
           )}
 
-          {/* ---------------- WASTE GENERATOR FORM ---------------- */}
+          {/* WASTE FORM */}
           {step === "wasteForm" && (
-            <motion.div
-              key="wasteForm"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              transition={{ duration: 0.4 }}
-            >
-              <WasteForm
-                onSubmitWaste={(data) => {
-                  setWasteData(data);
-                  setStep("status");
-                }}
-                onBack={() => setStep("role")}
-              />
-            </motion.div>
+            <WasteForm
+              onSubmitWaste={(data) => {
+                setWasteData(data);
+                setStep("status");
+              }}
+              onBack={() => setStep("role")}
+            />
           )}
 
-          {/* ---------------- RECYCLER REGISTRATION ---------------- */}
+          {/* RECYCLER FORM */}
           {step === "recyclerForm" && (
-            <motion.div
-              key="recyclerForm"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              transition={{ duration: 0.4 }}
-            >
-              <RecycleForm
-                onSubmit={() => setStep("recyclerDashboard")}
-                onBack={() => setStep("role")}
-              />
-            </motion.div>
+            <RecycleForm
+              onSubmit={() => setStep("recyclerDashboard")}
+              onBack={() => setStep("role")}
+            />
           )}
 
-          {/* ---------------- WASTE STATUS ---------------- */}
+          {/* WASTE STATUS */}
           {step === "status" && wasteData && (
-            <motion.div
-              key="status"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              transition={{ duration: 0.4 }}
-            >
-              <WasteStatus
-                data={wasteData}
-                onBack={() => setStep("role")}
-              />
-            </motion.div>
+            <WasteStatus data={wasteData} onBack={() => setStep("role")} />
           )}
 
-          {/* ---------------- RECYCLER DASHBOARD ---------------- */}
+          {/* RECYCLER DASHBOARD */}
           {step === "recyclerDashboard" && (
-            <motion.div
-              key="recyclerDashboard"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              transition={{ duration: 0.4 }}
-            >
-              <RecyclerDashboard onBack={() => setStep("role")} />
-            </motion.div>
+            <RecyclerDashboard onBack={() => setStep("role")} />
           )}
 
         </AnimatePresence>
