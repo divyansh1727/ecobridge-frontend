@@ -134,13 +134,13 @@ export default function ComparisonTable({ results, wasteType, location, onBack }
                     {isGoogle ? (
                       r.placeId ? (
                         <a
-                          href={`https://www.google.com/maps/place/?q=place_id:${r.placeId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-blue-500 px-3 py-1 rounded-lg hover:bg-blue-600 transition text-white text-sm shadow-md"
-                        >
-                          View 🌍
-                        </a>
+  href={`https://www.google.com/maps/search/?api=1&query=${r.name}&query_place_id=${r.placeId}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-blue-500 px-3 py-1 rounded-lg hover:bg-blue-600 text-white text-sm"
+>
+  View 🌍
+</a>
                       ) : (
                         <span className="text-gray-400 text-sm">
                           No Link
