@@ -65,18 +65,27 @@ export default function WasteForm({ onSubmitWaste }) {
     setForm({ ...form, location: city });
     setSuggestions([]);
   };
-  const getCoordinates = async (locationName) => {
+ const getCoordinates = async (locationName) => {
   try {
+    const key = import.meta.env.VITE_GOOGLE_API_KEY;
+
+    if (!key) {
+      console.error("❌ API KEY MISSING");
+      return null;
+    }
+
     const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationName + ", India")}&key=${import.meta.env.VITE_GOOGLE_API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationName + ", India")}&key=${key}`
     );
 
     const data = await res.json();
 
-    console.log("Geocode response:", data); // 🔥 debug
+    console.log("Geocode FULL response:", data);
 
-    if (!data.results || data.results.length === 0) {
-      throw new Error("Invalid location");
+    // 🔥 FIX: check status instead of results
+    if (data.status !== "OK") {
+      console.error("Google Error:", data.status, data.error_message);
+      return null;
     }
 
     return data.results[0].geometry.location;
