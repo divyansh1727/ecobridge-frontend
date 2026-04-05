@@ -132,7 +132,11 @@ const [requestId, setRequestId] = useState(null);
                   setSelectedRole(role);
 
                   if (role === "generator") setStep("wasteForm");
-                  else if (role === "recycler") setStep("recyclerForm");
+                  else if (role === "recycler") {
+                    if (role === "recycler") {
+  localStorage.removeItem("recyclerId");
+  setStep("recyclerForm");
+}setStep("recyclerForm");}
                   else if (role === "admin") {
                     window.location.href = "/admin/login";
                   }
@@ -155,14 +159,13 @@ const [requestId, setRequestId] = useState(null);
 
           {/* RECYCLER FORM */}
          {step === "recyclerForm" && (
-  localStorage.getItem("recyclerId") ? (
-    <RecyclerDashboard onBack={() => setStep("role")} />
-  ) : (
-    <RecycleForm
-      onSubmit={() => setStep("recyclerDashboard")}
-      onBack={() => setStep("role")}
-    />
-  )
+  <RecycleForm
+    onSubmit={(id) => {
+      localStorage.setItem("recyclerId", id);
+      setStep("recyclerDashboard");
+    }}
+    onBack={() => setStep("role")}
+  />
 )}
 {step === "requestStatus" && requestId && (
   <RequestStatus

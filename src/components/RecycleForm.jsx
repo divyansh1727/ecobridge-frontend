@@ -90,11 +90,11 @@ const [form, setForm] = useState({
     const data = await res.json();
 
     // ✅ SAVE CORRECT ID
-    localStorage.setItem("recyclerId", data.recycler._id);
+    // localStorage.setItem("recyclerId", data.recycler._id);
 
     alert("Recycler registered successfully!");
 
-    onSubmit();
+    onSubmit(data.recycler._id);
 
   } catch (err) {
     console.error(err);
