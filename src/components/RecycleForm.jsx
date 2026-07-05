@@ -95,7 +95,7 @@ const [form, setForm] = useState({
     alert("Recycler registered successfully!");
 
     onSubmit(data.recycler._id);
-
+    
   } catch (err) {
     console.error(err);
     alert("Failed to register recycler");
